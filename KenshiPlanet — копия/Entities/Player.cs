@@ -5,6 +5,7 @@ using System.Numerics;
 using Raylib_cs;
 using KenshiPlanet.Economy;
 using KenshiPlanet.Core;
+using KenshiPlanet.World;
 
 namespace KenshiPlanet.Entities
 {
