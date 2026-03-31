@@ -34,5 +34,13 @@ namespace KenshiPlanet.Rendering
                 Offset   = offset ?? Vector2.Zero
             };
         }
+        
+        /// <summary>
+        /// Преобразовать мировые координаты в экранные
+        /// </summary>
+        public Vector2 WorldToScreen(Vector2 worldPosition)
+        {
+            return Raylib.GetWorldToScreen2D(worldPosition, Camera);
+        }
     }
 }

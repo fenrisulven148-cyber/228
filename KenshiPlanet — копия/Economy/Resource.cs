@@ -159,6 +159,12 @@ namespace KenshiPlanet.Economy
         
         // Время последней добычи этим игроком
         public float LastMinedTime { get; set; } = -1000f;
+        
+        // Рабочие, назначенные на этот узел
+        public int WorkersAssigned { get; set; } = 0;
+        
+        // Максимальное количество рабочих
+        public int MaxWorkers => Type == ResourceType.Wood ? 3 : 5;
 
         public ResourceNode(int id, string name, Vector2 position, ResourceType type, float amount = 10000f)
         {
@@ -172,6 +178,29 @@ namespace KenshiPlanet.Economy
             // Размер для деревьев зависит от типа
             if (type == ResourceType.Wood)
                 Size = 0.8f + (float)(ResourceGlobals.GlobalRng.NextDouble() * 0.4);
+        }
+
+        /// <summary>
+        /// Добыча ресурса за указанное время
+        /// </summary>
+        public float Extract(float deltaTime)
+        {
+            if (!IsActive || Amount <= 0) return 0f;
+            
+            // Скорость добычи: 1 единица за 10 секунд = 0.1 ед/сек
+            float extractRate = 0.1f;
+            float toExtract = deltaTime * extractRate;
+            float extracted = Math.Min(toExtract, Amount);
+            
+            Amount -= extracted;
+            
+            if (Amount <= 0)
+            {
+                IsActive = false;
+                WorkersAssigned = 0;
+            }
+            
+            return extracted;
         }
 
         public void Render()

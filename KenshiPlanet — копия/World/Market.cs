@@ -165,5 +165,21 @@ namespace KenshiPlanet.World
         {
             return _stock.ContainsKey(type) ? _stock[type] : 0f;
         }
+        
+        /// <summary>
+        /// Отрисовка информации о рынке (для отладки)
+        /// </summary>
+        public void Render(Vector2 position)
+        {
+            // Простая отрисовка для отладки - можно расширить
+            int x = (int)position.X;
+            int y = (int)position.Y;
+            
+            Raylib.DrawRectangle(x, y, 150, 100, new Color(40, 40, 50, 200));
+            Raylib.DrawRectangleLines(x, y, 150, 100, Color.White);
+            
+            FontManager.DrawText("Рынок", x + 5, y + 5, 14, Color.White);
+            FontManager.DrawText($"Товаров: {_stock.Count}", x + 5, y + 25, 12, Color.LightGray);
+        }
     }
 }

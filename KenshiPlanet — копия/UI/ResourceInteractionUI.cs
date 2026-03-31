@@ -154,7 +154,8 @@ namespace KenshiPlanet.UI
             Raylib.DrawRectangleLines(btnX, btnY, btnW, btnH, hover ? Color.White : Color.Gray);
             
             string btnText = "Добыть (ЛКМ)";
-            int textW = Raylib.MeasureTextEx(FontManager.Font, btnText, 14, 1).ToInt().X;
+            Vector2 textSize = Raylib.MeasureTextEx(FontManager.Font, btnText, 14, 1);
+            int textW = (int)textSize.X;
             FontManager.DrawText(btnText, btnX + (btnW - textW) / 2, btnY + 5, 14, Color.White);
             
             // Обработка клика по кнопке
