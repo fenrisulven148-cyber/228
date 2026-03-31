@@ -6,11 +6,143 @@ using KenshiPlanet.Core;
 
 namespace KenshiPlanet.Economy
 {
+    /// <summary>
+    /// Типы ресурсов для глобальной стратегии
+    /// </summary>
+    public enum ResourceType
+    {
+        // Руды
+        Iron,
+        Copper,
+        Gold,
+        Silver,
+        Lead,
+        Zinc,
+        Tin,
+        Aluminum,
+        Uranium,
+        
+        // Строительные материалы
+        Stone,
+        Coal,
+        Salt,
+        
+        // Биологические ресурсы
+        Wood,
+        Food,
+        
+        // Промышленные товары
+        Weapons,
+        Tools,
+        Luxury,
+        Steel,
+        Electronics
+    }
+
     public static class ResourceGlobals
     {
         public static readonly Random GlobalRng = new Random();
+        
+        // Цвета для каждого типа ресурса
+        public static readonly Dictionary<ResourceType, Color> ResourceColors = new()
+        {
+            { ResourceType.Iron,       new Color(128, 128, 128, 255) },     // Серый
+            { ResourceType.Copper,     new Color(184, 115, 51, 255) },      // Медный
+            { ResourceType.Gold,       new Color(255, 215, 0, 255) },       // Золотой
+            { ResourceType.Silver,     new Color(192, 192, 192, 255) },     // Серебряный
+            { ResourceType.Lead,       new Color(100, 100, 110, 255) },     // Свинцовый
+            { ResourceType.Zinc,       new Color(200, 200, 210, 255) },     // Цинковый
+            { ResourceType.Tin,        new Color(210, 180, 140, 255) },     // Оловянный
+            { ResourceType.Aluminum,   new Color(220, 220, 230, 255) },     // Алюминиевый
+            { ResourceType.Uranium,    new Color(0, 255, 0, 255) },         // Урановый (светящийся)
+            { ResourceType.Stone,      new Color(80, 80, 80, 255) },        // Каменный
+            { ResourceType.Coal,       new Color(30, 30, 30, 255) },        // Уголь
+            { ResourceType.Salt,       new Color(255, 255, 255, 255) },     // Соль
+            { ResourceType.Wood,       new Color(101, 67, 33, 255) },       // Древесина
+            { ResourceType.Food,       new Color(34, 139, 34, 255) },       // Еда
+            { ResourceType.Weapons,    new Color(139, 26, 26, 255) },       // Оружие
+            { ResourceType.Tools,      new Color(70, 130, 180, 255) },      // Инструменты
+            { ResourceType.Luxury,     new Color(218, 112, 214, 255) },     // Роскошь
+            { ResourceType.Steel,      new Color(64, 64, 64, 255) },        // Сталь
+            { ResourceType.Electronics,new Color(0, 100, 200, 255) }        // Электроника
+        };
+
+        // Базовые цены ресурсов
+        public static readonly Dictionary<ResourceType, float> BasePrices = new()
+        {
+            { ResourceType.Iron,       50.0f   },
+            { ResourceType.Copper,     75.0f   },
+            { ResourceType.Gold,       500.0f  },
+            { ResourceType.Silver,     250.0f  },
+            { ResourceType.Lead,       40.0f   },
+            { ResourceType.Zinc,       60.0f   },
+            { ResourceType.Tin,        80.0f   },
+            { ResourceType.Aluminum,   90.0f   },
+            { ResourceType.Uranium,    1000.0f },
+            { ResourceType.Stone,      30.0f   },
+            { ResourceType.Coal,       45.0f   },
+            { ResourceType.Salt,       20.0f   },
+            { ResourceType.Wood,       25.0f   },
+            { ResourceType.Food,       10.0f   },
+            { ResourceType.Weapons,    200.0f  },
+            { ResourceType.Tools,      100.0f  },
+            { ResourceType.Luxury,     1000.0f },
+            { ResourceType.Steel,      150.0f  },
+            { ResourceType.Electronics,300.0f  }
+        };
+
+        // Русские названия
+        public static readonly Dictionary<ResourceType, string> RussianNames = new()
+        {
+            { ResourceType.Iron,       "Железо"    },
+            { ResourceType.Copper,     "Медь"      },
+            { ResourceType.Gold,       "Золото"    },
+            { ResourceType.Silver,     "Серебро"   },
+            { ResourceType.Lead,       "Свинец"    },
+            { ResourceType.Zinc,       "Цинк"      },
+            { ResourceType.Tin,        "Олово"     },
+            { ResourceType.Aluminum,   "Алюминий"  },
+            { ResourceType.Uranium,    "Уран"      },
+            { ResourceType.Stone,      "Камень"    },
+            { ResourceType.Coal,       "Уголь"     },
+            { ResourceType.Salt,       "Соль"      },
+            { ResourceType.Wood,       "Древесина" },
+            { ResourceType.Food,       "Еда"       },
+            { ResourceType.Weapons,    "Оружие"    },
+            { ResourceType.Tools,      "Инстр."    },
+            { ResourceType.Luxury,     "Роскошь"   },
+            { ResourceType.Steel,      "Сталь"     },
+            { ResourceType.Electronics,"Электрон." }
+        };
+
+        // Категории ресурсов
+        public static readonly Dictionary<ResourceType, string> ResourceCategories = new()
+        {
+            { ResourceType.Iron,       "Ore"      },
+            { ResourceType.Copper,     "Ore"      },
+            { ResourceType.Gold,       "Ore"      },
+            { ResourceType.Silver,     "Ore"      },
+            { ResourceType.Lead,       "Ore"      },
+            { ResourceType.Zinc,       "Ore"      },
+            { ResourceType.Tin,        "Ore"      },
+            { ResourceType.Aluminum,   "Ore"      },
+            { ResourceType.Uranium,    "Ore"      },
+            { ResourceType.Stone,      "Material" },
+            { ResourceType.Coal,       "Material" },
+            { ResourceType.Salt,       "Material" },
+            { ResourceType.Wood,       "Biomass"  },
+            { ResourceType.Food,       "Biomass"  },
+            { ResourceType.Weapons,    "Product"  },
+            { ResourceType.Tools,      "Product"  },
+            { ResourceType.Luxury,     "Product"  },
+            { ResourceType.Steel,      "Product"  },
+            { ResourceType.Electronics,"Product"  }
+        };
     }
 
+    /// <summary>
+    /// Узел ресурса - процедурно сгенерированная точка добычи
+    /// </summary>
     public class ResourceNode
     {
         public int Id { get; set; }
@@ -21,47 +153,71 @@ namespace KenshiPlanet.Economy
         public float MaxAmount { get; set; } = 10000.0f;
         public int OwnerFactionId { get; set; } = -1;
         public bool IsActive { get; set; } = true;
+        
+        // Для деревьев - размер/возраст
+        public float Size { get; set; } = 1.0f;
+        
+        // Время последней добычи этим игроком
+        public float LastMinedTime { get; set; } = -1000f;
 
-        public float ExtractionRate { get; set; } = 10.0f;
-        public int WorkersAssigned { get; set; } = 0;
-        public int MaxWorkers { get; set; } = 20;
-
-        public ResourceNode(int id, string name, Vector2 position, ResourceType type)
+        public ResourceNode(int id, string name, Vector2 position, ResourceType type, float amount = 10000f)
         {
-            Id = id; Name = name; Position = position; Type = type;
-        }
-
-        public float Extract(float deltaTime)
-        {
-            if (!IsActive || Amount <= 0 || WorkersAssigned <= 0) return 0.0f;
-            float extracted = Math.Min(ExtractionRate * WorkersAssigned * deltaTime, Amount);
-            Amount -= extracted;
-            if (Amount <= 0) IsActive = false;
-            return extracted;
+            Id = id; 
+            Name = name; 
+            Position = position; 
+            Type = type;
+            Amount = amount;
+            MaxAmount = amount;
+            
+            // Размер для деревьев зависит от типа
+            if (type == ResourceType.Wood)
+                Size = 0.8f + (float)(ResourceGlobals.GlobalRng.NextDouble() * 0.4);
         }
 
         public void Render()
         {
-            Color nodeColor = Type switch
+            if (!IsActive && Amount <= 0) return;
+            
+            Color nodeColor = ResourceGlobals.ResourceColors.TryGetValue(Type, out var c) 
+                ? c 
+                : Color.White;
+
+            // Размер зависит от типа и количества
+            float baseSize = Type == ResourceType.Wood ? 20f : 15f;
+            float size = baseSize * Size * (0.5f + 0.5f * (Amount / MaxAmount));
+            
+            // Отрисовка узла
+            if (Type == ResourceType.Wood)
             {
-                ResourceType.Iron   => Color.Gray,
-                ResourceType.Copper => Color.Orange,
-                ResourceType.Gold   => Color.Gold,
-                ResourceType.Food   => Color.Green,
-                ResourceType.Wood   => Color.Brown,
-                ResourceType.Stone  => Color.DarkGray,
-                _                   => Color.White
-            };
+                // Дерево - рисуем как круг с "стволом"
+                Raylib.DrawCircleV(Position, size * 0.7f, nodeColor);
+                Raylib.DrawRectangle(
+                    (int)Position.X - (int)(size * 0.15f),
+                    (int)Position.Y + (int)(size * 0.5f),
+                    (int)(size * 0.3f),
+                    (int)(size * 0.8f),
+                    new Color(60, 40, 20, 255));
+            }
+            else
+            {
+                // Руда - кристаллическая форма
+                Raylib.DrawCircleV(Position, size, nodeColor);
+                Raylib.DrawCircleLines((int)Position.X, (int)Position.Y, (int)size, Color.Black);
+                
+                // Блик для руд
+                if (Type == ResourceType.Gold || Type == ResourceType.Silver || Type == ResourceType.Uranium)
+                {
+                    Raylib.DrawCircle(
+                        (int)(Position.X - size * 0.3f),
+                        (int)(Position.Y - size * 0.3f),
+                        size * 0.2f,
+                        new Color(255, 255, 255, 150));
+                }
+            }
 
-            float size = 15.0f + (Amount / MaxAmount) * 10.0f;
-            Raylib.DrawCircleV(Position, size, nodeColor);
-            Raylib.DrawCircleLines((int)Position.X, (int)Position.Y, (int)size, Color.Black);
-
-            if (!IsActive)
-                FontManager.DrawText("X", (int)Position.X - 5, (int)Position.Y - 8, 16, Color.Red);
-
-            if (WorkersAssigned > 0)
-                FontManager.DrawText($"{WorkersAssigned}", (int)Position.X - 5, (int)Position.Y - 20, 12, Color.White);
+            // Индикатор истощения
+            if (Amount < MaxAmount * 0.1f && IsActive)
+                FontManager.DrawText("!", (int)Position.X - 5, (int)Position.Y - (int)size - 15, 16, Color.Red);
         }
 
         public void Replenish(float amount)
@@ -69,93 +225,75 @@ namespace KenshiPlanet.Economy
             Amount = Math.Min(Amount + amount, MaxAmount);
             if (Amount > 0) IsActive = true;
         }
+        
+        public float GetRemainingPercent() => Amount / MaxAmount;
     }
 
-    public enum ResourceType
+    /// <summary>
+    /// Состояние добычи ресурса игроком
+    /// </summary>
+    public class MiningSession
     {
-        Iron, Copper, Gold, Food, Wood, Stone, Weapons, Tools, Luxury
-    }
-
-    public class Market
-    {
-        public int SettlementId { get; set; }
-        public Dictionary<ResourceType, float> Prices { get; set; } = new();
-        public Dictionary<ResourceType, float> Supply { get; set; } = new();
-        public Dictionary<ResourceType, float> Demand { get; set; } = new();
-
-        private static readonly Dictionary<ResourceType, string> _ruNames = new()
+        public ResourceNode? TargetNode { get; set; }
+        public float Progress { get; set; } = 0f;
+        public float TimeSpent { get; set; } = 0f;
+        public bool IsMining { get; set; } = false;
+        
+        // 1 единица ресурса за 10 секунд
+        public const float UNITS_PER_SECOND = 0.1f;
+        public const float SECONDS_PER_UNIT = 10f;
+        
+        public void Start(ResourceNode node)
         {
-            { ResourceType.Iron,    "Железо"  },
-            { ResourceType.Copper,  "Медь"    },
-            { ResourceType.Gold,    "Золото"  },
-            { ResourceType.Food,    "Еда"     },
-            { ResourceType.Wood,    "Дерево"  },
-            { ResourceType.Stone,   "Камень"  },
-            { ResourceType.Weapons, "Оружие"  },
-            { ResourceType.Tools,   "Инстр."  },
-            { ResourceType.Luxury,  "Роскошь" }
-        };
-
-        private readonly Dictionary<ResourceType, float> _basePrices = new()
-        {
-            { ResourceType.Iron,    50.0f   },
-            { ResourceType.Copper,  75.0f   },
-            { ResourceType.Gold,    500.0f  },
-            { ResourceType.Food,    10.0f   },
-            { ResourceType.Wood,    25.0f   },
-            { ResourceType.Stone,   30.0f   },
-            { ResourceType.Weapons, 200.0f  },
-            { ResourceType.Tools,   100.0f  },
-            { ResourceType.Luxury,  1000.0f }
-        };
-
-        public Market(int settlementId)
-        {
-            SettlementId = settlementId;
-            InitializePrices();
+            TargetNode = node;
+            Progress = 0f;
+            TimeSpent = 0f;
+            IsMining = true;
         }
-
-        private void InitializePrices()
+        
+        public void Update(float deltaTime)
         {
-            foreach (var kvp in _basePrices)
+            if (!IsMining || TargetNode == null || !TargetNode.IsActive) return;
+            
+            TimeSpent += deltaTime;
+            Progress = TimeSpent / SECONDS_PER_UNIT;
+            
+            if (Progress >= 1f)
             {
-                Prices[kvp.Key] = kvp.Value;
-                Supply[kvp.Key] = 100.0f;
-                Demand[kvp.Key] = 100.0f;
+                Progress = 0f;
+                TimeSpent = 0f;
             }
         }
-
-        public void UpdatePrices(float deltaTime)
+        
+        public void Stop()
         {
-            foreach (var resource in _basePrices.Keys)
-            {
-                float ratio = Supply[resource] / (Demand[resource] + 1);
-                float targetPrice = _basePrices[resource] * (1.0f / ratio);
-                Prices[resource] += (targetPrice - Prices[resource]) * 0.01f * deltaTime;
-                Prices[resource] = Math.Max(Prices[resource], _basePrices[resource] * 0.1f);
-                Prices[resource] = Math.Min(Prices[resource], _basePrices[resource] * 10.0f);
-            }
+            IsMining = false;
+            Progress = 0f;
+            TimeSpent = 0f;
+            TargetNode = null;
         }
-
-        public float GetPrice(ResourceType resource) =>
-            Prices.TryGetValue(resource, out var price) ? price : 0.0f;
-
-        public void AddSupply(ResourceType resource, float amount)
-        { if (Supply.ContainsKey(resource)) Supply[resource] += amount; }
-
-        public void AddDemand(ResourceType resource, float amount)
-        { if (Demand.ContainsKey(resource)) Demand[resource] += amount; }
-
-        public void Render(Vector2 position)
+        
+        public bool CanExtract() => Progress >= 1f;
+        
+        public float ExtractUnit()
         {
-            int yOffset = 0;
-            foreach (var kvp in Prices)
+            if (!CanExtract() || TargetNode == null) return 0f;
+            
+            float extracted = Math.Min(1f, TargetNode.Amount);
+            TargetNode.Amount -= extracted;
+            
+            if (TargetNode.Amount <= 0)
             {
-                string name = _ruNames.TryGetValue(kvp.Key, out var n) ? n : kvp.Key.ToString();
-                string text = $"{name}: {kvp.Value:F1}г";
-                FontManager.DrawText(text, (int)position.X, (int)position.Y + yOffset, 12, Color.White);
-                yOffset += 15;
+                TargetNode.IsActive = false;
+                Stop();
             }
+            else
+            {
+                Progress = 0f;
+                TimeSpent = 0f;
+            }
+            
+            return extracted;
         }
     }
 }

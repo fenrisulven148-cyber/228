@@ -23,6 +23,10 @@ namespace KenshiPlanet.Core
         public Camera2D     Camera => CameraManager.Instance.Camera;
         public Player       Player { get; private set; }
 
+        // Система добычи ресурсов
+        private MiningSession _miningSession = new();
+        private UI.ResourceInteractionUI _resourceUI = new();
+
         private bool _showGlobalMap   = false;
         private bool _showFactionInfo = false;
         private bool _showLawsPanel   = false;
@@ -48,6 +52,12 @@ namespace KenshiPlanet.Core
             World  = new WorldManager();
             Player = new Player { Position = Vector2.Zero, Money = 500.0f };
             Player.AddItem(ResourceType.Food, 10.0f);
+            
+            // Подписываемся на событие кнопки добычи
+            _resourceUI.OnMineButtonClick += OnMineButtonClicked;
+            
+            // Передаем ссылку на мир в UI ресурсов
+            _resourceUI.SetWorld(World);
         }
 
         // ----------------------------------------------------------------
@@ -196,11 +206,22 @@ namespace KenshiPlanet.Core
                     Player.Hunger = Math.Max(0, Player.Hunger - 40.0f);
             }
 
-            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && _nearestNPC != null)
+            // Обработка взаимодействия с ресурсами
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left))
             {
-                var rel = World.GetPlayerRelationToFaction(_nearestNPC.FactionId, Player);
-                if (rel == FactionRelation.Hostile || rel == FactionRelation.War)
-                    Player.TryAttackNPC(_nearestNPC, World.Factions.ToDictionary(f => f.Key, f => f.Value.Color));
+                // Сначала проверяем клик по NPC (враждебные)
+                if (_nearestNPC != null)
+                {
+                    var rel = World.GetPlayerRelationToFaction(_nearestNPC.FactionId, Player);
+                    if (rel == FactionRelation.Hostile || rel == FactionRelation.War)
+                    {
+                        Player.TryAttackNPC(_nearestNPC, World.Factions.ToDictionary(f => f.Key, f => f.Value.Color));
+                        goto updateCamera;
+                    }
+                }
+                
+                // Если не кликнули по NPC, проверяем ресурсы
+                CheckResourceClick();
             }
 
             updateCamera:
@@ -208,6 +229,41 @@ namespace KenshiPlanet.Core
             int sh = Raylib.GetScreenHeight();
             CameraManager.Instance.UpdateCamera(Player.Position, _cameraZoom,
                 new Vector2(sw / 2.0f, sh / 2.0f));
+        }
+        
+        /// <summary>
+        /// Проверяет клик по ресурсам поблизости
+        /// </summary>
+        private void CheckResourceClick()
+        {
+            // Находим ближайший активный ресурс в радиусе взаимодействия
+            ResourceNode? nearestResource = null;
+            float nearestDist = float.MaxValue;
+            
+            foreach (var resource in World.Resources.Values)
+            {
+                if (!resource.IsActive) continue;
+                
+                float dist = Vector2.Distance(Player.Position, resource.Position);
+                if (dist < UI.ResourceInteractionUI.INTERACTION_DISTANCE && dist < nearestDist)
+                {
+                    nearestDist = dist;
+                    nearestResource = resource;
+                }
+            }
+            
+            if (nearestResource != null)
+            {
+                _resourceUI.TrySelectNode(nearestResource, Player.Position);
+            }
+        }
+        
+        /// <summary>
+        /// Обработчик нажатия кнопки "Добыть" в UI
+        /// </summary>
+        private void OnMineButtonClicked()
+        {
+            _resourceUI.StartMining(_miningSession);
         }
 
         private void HandleGlobalMapClick()
@@ -271,6 +327,36 @@ namespace KenshiPlanet.Core
             Player.CurrentFactionTerritory = World.TerritoryManager.GetFactionAtPosition(Player.Position);
             Player.IsNight = World.IsNight; // синхронизируем из единственного источника
             UpdateInteractionTargets();
+
+            // Обновляем сессию добычи ресурсов
+            if (_miningSession.IsMining)
+            {
+                _miningSession.Update((float)dt);
+                
+                // Проверяем, можем ли мы добыть ресурс
+                if (_miningSession.CanExtract())
+                {
+                    float extracted = _miningSession.ExtractUnit();
+                    if (extracted > 0 && _miningSession.TargetNode != null)
+                    {
+                        // Добавляем ресурс в инвентарь игрока
+                        Player.AddItem(_miningSession.TargetNode.Type, extracted);
+                    }
+                }
+                
+                // Если игрок отошел слишком далеко, прерываем добычу
+                if (_miningSession.TargetNode != null)
+                {
+                    float distToTarget = Vector2.Distance(Player.Position, _miningSession.TargetNode.Position);
+                    if (distToTarget > UI.ResourceInteractionUI.INTERACTION_DISTANCE * 1.5f)
+                    {
+                        _miningSession.Stop();
+                    }
+                }
+            }
+            
+            // Обновляем UI ресурсов
+            _resourceUI.Update(Player, dt);
 
             if (_selectedFactionId.HasValue)
                 _infoPanelAlpha = Math.Min(_infoPanelAlpha + INFO_ANIMATION_SPEED, 1.0f);
@@ -347,6 +433,9 @@ namespace KenshiPlanet.Core
                     byte alpha = (byte)(World.NightIntensity * 160); // макс. затемнение ~63%
                     Raylib.DrawRectangle(0, 0, sw, sh, new Color((byte)0, (byte)0, (byte)40, alpha));
                 }
+
+                // Рендер UI ресурсов (поверх всего, но под HUD)
+                _resourceUI.Render(_miningSession, Player);
 
                 RenderHUD();
             }

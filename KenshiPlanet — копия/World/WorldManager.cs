@@ -651,15 +651,118 @@ namespace KenshiPlanet.World
         // ================================================================
         private void GenerateResources(Random rng)
         {
-            for (int i = 0; i < 2000; i++)
+            // Используем тот же RNG для детерминированной генерации
+            // Генерируем руды и деревья процедурно на основе сида мира
+            
+            int resourceId = 0;
+            
+            // Параметры генерации месторождений
+            const int ORE_DEPOSITS_PER_TYPE = 80;  // Количество месторождений каждого типа руды
+            const int TREE_COUNT = 500;             // Количество деревьев
+            
+            // Список типов руд для генерации
+            var oreTypes = new[]
             {
-                float x    = (float)(rng.NextDouble() * WORLD_RADIUS * 2 - WORLD_RADIUS);
-                float y    = (float)(rng.NextDouble() * WORLD_RADIUS * 2 - WORLD_RADIUS);
-                var   type = (ResourceType)rng.Next(0, 7);
-                var   node = new ResourceNode(_nextResourceId++, $"{type} Deposit {i}",
-                    new Vector2(x, y), type);
-                Resources[node.Id] = node;
+                ResourceType.Iron,
+                ResourceType.Copper,
+                ResourceType.Gold,
+                ResourceType.Silver,
+                ResourceType.Lead,
+                ResourceType.Zinc,
+                ResourceType.Tin,
+                ResourceType.Aluminum,
+                ResourceType.Uranium,
+                ResourceType.Stone,
+                ResourceType.Coal,
+                ResourceType.Salt
+            };
+            
+            // Генерируем месторождения руды для каждого типа
+            foreach (var oreType in oreTypes)
+            {
+                for (int i = 0; i < ORE_DEPOSITS_PER_TYPE; i++)
+                {
+                    // Детерминированная позиция на основе комбинации сида и индекса
+                    float angle = (float)(rng.NextDouble() * Math.PI * 2);
+                    float distance = (float)(rng.NextDouble() * WORLD_RADIUS * 0.9);
+                    
+                    Vector2 position = new Vector2(
+                        (float)Math.Cos(angle) * distance,
+                        (float)Math.Sin(angle) * distance
+                    );
+                    
+                    // Размер месторождения зависит от типа руды
+                    float baseAmount = oreType switch
+                    {
+                        ResourceType.Gold or ResourceType.Uranium => 3000f,   // Редкие - меньше
+                        ResourceType.Silver or ResourceType.Aluminum => 5000f,
+                        ResourceType.Iron or ResourceType.Copper or ResourceType.Coal => 15000f, // Частые - больше
+                        _ => 8000f
+                    };
+                    
+                    // Добавляем вариативность
+                    float amount = baseAmount * (0.8f + (float)rng.NextDouble() * 0.4f);
+                    
+                    var node = new ResourceNode(
+                        _nextResourceId++,
+                        $"{ResourceGlobals.RussianNames[oreType]} - Месторождение {++resourceId}",
+                        position,
+                        oreType,
+                        amount
+                    );
+                    
+                    Resources[node.Id] = node;
+                }
             }
+            
+            // Генерируем деревья (биомассу)
+            // Деревья генерируются в "лесных" зонах - используем шум для определения зон
+            for (int i = 0; i < TREE_COUNT; i++)
+            {
+                float angle = (float)(rng.NextDouble() * Math.PI * 2);
+                // Деревья чаще встречаются ближе к центру и реже у краев
+                float distance = (float)(rng.NextDouble() * WORLD_RADIUS * 0.7);
+                
+                Vector2 position = new Vector2(
+                    (float)Math.Cos(angle) * distance,
+                    (float)Math.Sin(angle) * distance
+                );
+                
+                var tree = new ResourceNode(
+                    _nextResourceId++,
+                    $"Дерево {i + 1}",
+                    position,
+                    ResourceType.Wood,
+                    500f + (float)rng.NextDouble() * 500f  // 500-1000 единиц древесины
+                );
+                
+                Resources[tree.Id] = tree;
+            }
+            
+            // Генерируем источники еды (кусты, растения)
+            const int FOOD_SOURCES = 200;
+            for (int i = 0; i < FOOD_SOURCES; i++)
+            {
+                float angle = (float)(rng.NextDouble() * Math.PI * 2);
+                float distance = (float)(rng.NextDouble() * WORLD_RADIUS * 0.8);
+                
+                Vector2 position = new Vector2(
+                    (float)Math.Cos(angle) * distance,
+                    (float)Math.Sin(angle) * distance
+                );
+                
+                var foodSource = new ResourceNode(
+                    _nextResourceId++,
+                    $"Пищевые растения {i + 1}",
+                    position,
+                    ResourceType.Food,
+                    200f + (float)rng.NextDouble() * 300f
+                );
+                
+                Resources[foodSource.Id] = foodSource;
+            }
+            
+            Console.WriteLine($"[World] Сгенерировано ресурсов: {Resources.Count}");
         }
 
         private void GenerateMarkets()
